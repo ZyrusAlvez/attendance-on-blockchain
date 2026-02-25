@@ -12,7 +12,7 @@ type Event = {
 }
 
 async function generateHash(eventId: string, name: string, timestamp: string) {
-  const data = `${eventId}${name}${timestamp}`
+  const data = `${eventId}|${name}|${timestamp}`
   const encoder = new TextEncoder()
   const dataBuffer = encoder.encode(data)
   const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
@@ -55,17 +55,33 @@ export default function AttendancePage() {
 
     setSubmitting(true)
     const timestamp = new Date().toISOString()
-    const hash = await generateHash(event.id, name, timestamp)
+    const hash = await generateHash(event.id, name.trim(), timestamp)
 
-    const { error } = await supabase.from('attendance').insert({
-      event_id: event.id,
-      name: name.trim(),
-      timestamp,
-      hash,
-    })
+    const { data: attendanceData, error: attendanceError } = await supabase
+      .from('attendance')
+      .insert({
+        event_id: event.id,
+        name: name.trim(),
+        timestamp,
+      })
+      .select()
+      .single()
 
-    if (error) {
+    if (attendanceError) {
       toast.error('Failed to submit attendance')
+      setSubmitting(false)
+      return
+    }
+
+    const { error: proofError } = await supabase
+      .from('integrity_proofs')
+      .insert({
+        attendance_id: attendanceData.id,
+        proof_hash: hash,
+      })
+
+    if (proofError) {
+      toast.error('Failed to create integrity proof')
     } else {
       toast.success('Attendance submitted successfully!')
       setName('')
