@@ -36,6 +36,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [elections, setElections] = useState<Election[]>([])
   const [selectedElection, setSelectedElection] = useState<string | null>(null)
+  const [showQRModal, setShowQRModal] = useState(false)
+  const [qrCodeUrl, setQrCodeUrl] = useState('')
+  const [currentElectionUrl, setCurrentElectionUrl] = useState('')
   const [votes, setVotes] = useState<Vote[]>([])
   const [verifying, setVerifying] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -217,6 +220,17 @@ export default function DashboardPage() {
     }
   }
 
+  const showQR = async (electionUrl: string) => {
+    try {
+      const qrDataUrl = await QRCode.toDataURL(electionUrl, { width: 512 })
+      setQrCodeUrl(qrDataUrl)
+      setCurrentElectionUrl(electionUrl)
+      setShowQRModal(true)
+    } catch (error) {
+      toast.error('Failed to generate QR code')
+    }
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/login')
@@ -233,16 +247,19 @@ export default function DashboardPage() {
   const userName = user?.user_metadata?.username || user?.email?.split('@')[0]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Kalahok
-            </h1>
+            <div className="flex items-center">
+              <img src="/Pasya on Chain.png" alt="Pasya on Chain" className="w-15 h-15" />
+              <h1 className="text-2xl font-bold">
+                <span className="text-gray-900 -ml-4">asya on Chain</span>
+              </h1>
+            </div>
             <button
               onClick={handleSignOut}
-              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               Sign Out
             </button>
@@ -252,107 +269,163 @@ export default function DashboardPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Hello, {userName}!</h2>
-          <p className="text-gray-600">Create and manage your elections.</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {userName}! 👋</h2>
+          <p className="text-gray-600">Manage your blockchain-verified elections</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Elections</h3>
+        <div className="grid lg:grid-cols-2 gap-6 h-[calc(100vh-16rem)]">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-6 flex-shrink-0">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Elections</h3>
+                <p className="text-sm text-gray-500 mt-1">{elections.length} total</p>
+              </div>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+                className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200"
               >
-                + Create
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create
+                </span>
               </button>
             </div>
 
             {elections.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 font-medium">No elections yet</p>
+                  <p className="text-sm text-gray-500 mt-1">Create your first election to get started</p>
                 </div>
-                <p className="text-gray-500 text-sm">No elections yet</p>
               </div>
             ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-3 overflow-y-auto flex-1 pr-2">
                 {elections.map((election) => (
                   <div
                     key={election.id}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    className={`group border rounded-xl p-4 cursor-pointer transition-all duration-200 ${
                       selectedElection === election.id
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-purple-300'
+                        ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-md'
+                        : 'border-gray-200 hover:border-indigo-300 hover:shadow-md bg-white'
                     }`}
                     onClick={() => loadVotes(election.id)}
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold text-gray-900">{election.election_name}</h4>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          downloadQR(election.election_url, election.election_name)
-                        }}
-                        className="text-purple-600 hover:text-purple-700"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                      </button>
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-semibold text-gray-900 flex-1 pr-2 group-hover:text-indigo-600 transition-colors">
+                        {election.election_name}
+                      </h4>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            showQR(election.election_url)
+                          }}
+                          className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
+                          title="Show QR Code"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            downloadQR(election.election_url, election.election_name)
+                          }}
+                          className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
+                          title="Download QR Code"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500">{new Date(election.created_at).toLocaleDateString()}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {new Date(election.created_at).toLocaleDateString()}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Vote Records</h3>
-              {selectedElection && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-6 flex-shrink-0">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Vote Records</h3>
+                {selectedElection && votes.length > 0 && (
+                  <p className="text-sm text-gray-500 mt-1">{votes.length} votes</p>
+                )}
+              </div>
+              {selectedElection && votes.length > 0 && (
                 <button
                   onClick={recheckIntegrity}
                   disabled={verifying}
-                  className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
+                  className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50 font-medium"
                 >
-                  {verifying ? 'Verifying...' : 'Verify'}
+                  {verifying ? 'Verifying...' : '🔒 Verify'}
                 </button>
               )}
             </div>
 
             {!selectedElection ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 font-medium">Select an election</p>
+                  <p className="text-sm text-gray-500 mt-1">Click on an election to view votes</p>
                 </div>
-                <p className="text-gray-500 text-sm">Select an election to view votes</p>
               </div>
             ) : votes.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-sm">No votes yet</p>
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-gray-600 font-medium">No votes yet</p>
+                  <p className="text-sm text-gray-500 mt-1">Votes will appear here once submitted</p>
+                </div>
               </div>
             ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
+              <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                 {votes.map((record) => (
-                  <div key={record.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                  <div key={record.id} className="border border-gray-200 rounded-xl p-4 hover:border-indigo-300 hover:shadow-md transition-all duration-200 bg-white">
                     <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900">{record.voter_name}</p>
-                        <p className="text-xs text-gray-500">{new Date(record.timestamp).toLocaleString()}</p>
+                      <div className="flex-1 pr-2">
+                        <p className="font-semibold text-gray-900">{record.voter_name}</p>
+                        <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {new Date(record.timestamp).toLocaleString()}
+                        </p>
                       </div>
                       {record.verified ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          ✓ Valid
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Valid
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          ✗ Tampered
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 flex-shrink-0">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Tampered
                         </span>
                       )}
                     </div>
@@ -364,9 +437,53 @@ export default function DashboardPage() {
         </div>
       </main>
 
+      {showQRModal && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">QR Code</h3>
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex justify-center mb-4">
+              <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64" />
+            </div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Election URL:</p>
+              <a
+                href={currentElectionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-purple-600 hover:underline break-all"
+              >
+                {currentElectionUrl}
+              </a>
+            </div>
+            <button
+              onClick={() => {
+                const link = document.createElement('a')
+                link.href = qrCodeUrl
+                link.download = 'qr-code.png'
+                link.click()
+                toast.success('QR code downloaded!')
+              }}
+              className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Download QR Code
+            </button>
+          </div>
+        </div>
+      )}
+
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl my-8">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl my-8 shadow-2xl">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Create New Election</h3>
             
             <input

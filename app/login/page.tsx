@@ -49,10 +49,13 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-            Kalahok
-          </h1>
-          <p className="text-gray-600">Attendance Verification System</p>
+          <div className="flex items-center justify-center mb-2">
+            <img src="/Pasya on Chain.png" alt="Pasya on Chain" className="w-16 h-16" />
+            <h1 className="text-4xl font-bold -ml-5">
+              <span className="text-gray-900">asya on Chain</span>
+            </h1>
+          </div>
+          <p className="text-gray-600">Blockchain-Verified Elections</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -199,9 +199,12 @@ export default function VotePage() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-              Kalahok
-            </h1>
+            <div className="flex items-center justify-center mb-2">
+              <img src="/Pasya on Chain.png" alt="Pasya on Chain" className="w-16 h-16" />
+              <h1 className="text-4xl font-bold -ml-5">
+                <span className="text-gray-900">asya on Chain</span>
+              </h1>
+            </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{election.election_name}</h2>
             <p className="text-gray-600">Cast your vote</p>
           </div>

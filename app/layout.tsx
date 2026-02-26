@@ -2,7 +2,7 @@ import "@/style/globals.css";
 import { Toaster } from 'sonner'
 
 export const metadata = {
-  title: "Kalahok - Attendance Verification",
+  title: "Pasya on Chain",
   description: "Modern attendance monitoring and verification system",
 };
 
