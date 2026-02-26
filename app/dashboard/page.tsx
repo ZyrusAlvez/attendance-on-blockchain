@@ -234,7 +234,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
@@ -250,107 +250,118 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Hello, {userName}!</h2>
           <p className="text-gray-600">Create and manage your elections.</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold text-gray-900">Elections</h3>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Create Election
-            </button>
-          </div>
-
-          {elections.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No elections yet. Create your first election!</p>
-          ) : (
-            <div className="grid gap-4">
-              {elections.map((election) => (
-                <div key={election.id} className="border border-gray-200 rounded-lg p-4 hover:border-purple-500 transition-colors">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-lg text-gray-900">{election.election_name}</h4>
-                      <p className="text-sm text-gray-500 mt-1">{new Date(election.created_at).toLocaleDateString()}</p>
-                      <p className="text-sm text-gray-600 mt-2 break-all">{election.election_url}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => loadVotes(election.id)}
-                        className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                      >
-                        View Votes
-                      </button>
-                      <button
-                        onClick={() => downloadQR(election.election_url, election.election_name)}
-                        className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
-                      >
-                        Download QR
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {selectedElection && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mt-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Vote Records</h3>
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Elections</h3>
               <button
-                onClick={recheckIntegrity}
-                disabled={verifying}
-                className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
               >
-                {verifying ? 'Verifying...' : 'Recheck Integrity'}
+                + Create
               </button>
             </div>
 
-            {votes.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No votes yet.</p>
+            {elections.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-sm">No elections yet</p>
+              </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Voter Name</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Timestamp</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {votes.map((record) => (
-                      <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 text-gray-900">{record.voter_name}</td>
-                        <td className="py-3 px-4 text-gray-600">
-                          {new Date(record.timestamp).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          {record.verified ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              ✓ Valid
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              ✗ Tampered
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {elections.map((election) => (
+                  <div
+                    key={election.id}
+                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                      selectedElection === election.id
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-purple-300'
+                    }`}
+                    onClick={() => loadVotes(election.id)}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900">{election.election_name}</h4>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          downloadQR(election.election_url, election.election_name)
+                        }}
+                        className="text-purple-600 hover:text-purple-700"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500">{new Date(election.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        )}
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Vote Records</h3>
+              {selectedElection && (
+                <button
+                  onClick={recheckIntegrity}
+                  disabled={verifying}
+                  className="px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
+                >
+                  {verifying ? 'Verifying...' : 'Verify'}
+                </button>
+              )}
+            </div>
+
+            {!selectedElection ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-sm">Select an election to view votes</p>
+              </div>
+            ) : votes.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-sm">No votes yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {votes.map((record) => (
+                  <div key={record.id} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-gray-900">{record.voter_name}</p>
+                        <p className="text-xs text-gray-500">{new Date(record.timestamp).toLocaleString()}</p>
+                      </div>
+                      {record.verified ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          ✓ Valid
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          ✗ Tampered
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </main>
 
       {showCreateModal && (
